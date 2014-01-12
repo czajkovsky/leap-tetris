@@ -6,7 +6,7 @@ pygame.mixer.pre_init(44100, -16, 2, 2048)
 
 pygame.init()
 
-pygame.mixer.music.load('bg_music.ogg')
+pygame.mixer.music.load('assets/bg_music.ogg')
 pygame.mixer.music.set_volume(0.3)
 
 #remove_row_sound = pygame.mixer.Sound('vaporize_1.ogg')
@@ -20,38 +20,38 @@ pygame.display.set_caption("Clone of Tetris")
 font = pygame.font.SysFont("arial black", 16)
 
 clock = pygame.time.Clock()
-cell_image = pygame.image.load('cell1.png').convert()
+cell_image = pygame.image.load('assets/cell1.png').convert()
 cell_image.set_colorkey((255,0,255))
-shape_1_image = pygame.image.load('shape_1_image.png').convert()
+shape_1_image = pygame.image.load('assets/shape_1_image.png').convert()
 shape_1_image.set_colorkey((255,0,255))
-shape_2_image = pygame.image.load('shape_2_image.png').convert()
+shape_2_image = pygame.image.load('assets/shape_2_image.png').convert()
 shape_2_image.set_colorkey((255,0,255))
-shape_3_image = pygame.image.load('shape_3_image.png').convert()
+shape_3_image = pygame.image.load('assets/shape_3_image.png').convert()
 shape_3_image.set_colorkey((255,0,255))
-shape_4_image = pygame.image.load('shape_4_image.png').convert()
+shape_4_image = pygame.image.load('assets/shape_4_image.png').convert()
 shape_4_image.set_colorkey((255,0,255))
-shape_5_image = pygame.image.load('shape_5_image.png').convert()
+shape_5_image = pygame.image.load('assets/shape_5_image.png').convert()
 shape_5_image.set_colorkey((255,0,255))
-shape_6_image = pygame.image.load('shape_6_image.png').convert()
+shape_6_image = pygame.image.load('assets/shape_6_image.png').convert()
 shape_6_image.set_colorkey((255,0,255))
-shape_7_image = pygame.image.load('shape_7_image.png').convert()
+shape_7_image = pygame.image.load('assets/shape_7_image.png').convert()
 shape_7_image.set_colorkey((255,0,255))
-game_over_image = pygame.image.load('game_over.png').convert()
+game_over_image = pygame.image.load('assets/game_over.png').convert()
 game_over_image.set_colorkey((255,0,255))
-board_bg = pygame.image.load('board_bg.png').convert()
-queue_bg = pygame.image.load('queue_bg_color.png').convert()
-side_bar = pygame.image.load('side_bar.png').convert()
+board_bg = pygame.image.load('assets/board_bg.png').convert()
+queue_bg = pygame.image.load('assets/queue_bg_color.png').convert()
+side_bar = pygame.image.load('assets/side_bar.png').convert()
 
 
 class Pause_Button(Button):
     def __init__(self, parent, position = (300,300)):
-        Button.__init__(self, parent, 'Start / Pause', pygame.image.load('start_stop_btn.png').convert(), position)
+        Button.__init__(self, parent, 'Start / Pause', pygame.image.load('assets/start_stop_btn.png').convert(), position)
     def on_click(self):
         self.parent.paused = not self.parent.paused
 
 class New_Game_Button(Button):
     def __init__(self, parent, position = (300,300)):
-        Button.__init__(self, parent, 'New Game', pygame.image.load('new_game_btn.png').convert(), position)
+        Button.__init__(self, parent, 'New Game', pygame.image.load('assets/new_game_btn.png').convert(), position)
     def on_click(self):
         self.parent.reset(pygame.time.get_ticks())
 
@@ -98,7 +98,7 @@ class GameBoard:
         self.score = 0
         Pause_Button(self, ((self.cols+1)*self.cell_width, ((self.rows)*self.cell_height) - 45))
         New_Game_Button(self, ((self.cols+4)*self.cell_width, ((self.rows)*self.cell_height) - 45))
-        
+
     def initialize(self,time):
         self.current_gp = None
         shape_id = random.randint(1,7)
@@ -176,7 +176,7 @@ class GameBoard:
                 x = x_offset + ((gp.col - 6) * self.cell_width)
             y = y_offset + (gp.row * self.cell_height)
             self.queue_image.blit(gp.image, (x, y))
-        
+
 
     def update(self, time):
         if self.paused or self.game_over:
@@ -230,7 +230,7 @@ class GameBoard:
             #remove_row_sound.play(0)
         self.score += pow(row_count,2)*100
         self.score += self.level * row_count * 20
-            
+
         if self.lines_done >= (self.level*self.level)+(self.level*6):
             self.level += 1
             self.game_speed -= 65
@@ -306,4 +306,4 @@ class GameBoard:
             buttons.draw(surface)
         for buttons in self.buttons:
             buttons.draw(surface)
-                            
+
