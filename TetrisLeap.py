@@ -16,20 +16,15 @@ class GameEngine:
   def isRunning(self):
     return self.running
 
+  def isPaused(self):
+    return self.board.paused
+
   def run(self):
     running = self.running
     board = self.board
     while running:
       for event in pygame.event.get():
-        if event.type == pygame.MOUSEBUTTONDOWN:
-          if pygame.mouse.get_pressed() ==(1,0,0):
-            position = pygame.mouse.get_pos()
-            for buttons in board.buttons:
-              buttons.check_click(position)
-        if event.type == pygame.QUIT:
-          running = False
-        if board.paused:
-          break
+
         if event.type == pygame.KEYDOWN:
           if event.key == pygame.K_ESCAPE:
             stop_game()
@@ -81,6 +76,10 @@ def main():
 
   while game.isRunning():
     for event in pygame.event.get():
+      if game.isPaused():
+        break
+      if event.type == pygame.QUIT:
+        game.stop()
       if event.type == pygame.KEYDOWN:
         game.stop()
   pygame.quit()
