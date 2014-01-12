@@ -34,3 +34,10 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+# Leap files
+Leap.py
+Leap.pyc
+lipLeap.dylib
+LeapPython.so
+lipLeap.so
