@@ -14,8 +14,6 @@ class GameEngine:
     running = self.running
     board = self.board
     while running:
-      if not pygame.mixer.music.get_busy():
-        pygame.mixer.music.play()
       for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN:
           if pygame.mouse.get_pressed() ==(1,0,0):
@@ -71,6 +69,7 @@ class GameEngine:
     pygame.quit()
 
 def main():
+
   game = GameEngine()
   game.run()
 
