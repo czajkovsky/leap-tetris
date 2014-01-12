@@ -35,6 +35,20 @@ class Listener(Leap.Listener):
               self.game.rotate()
         if gesture.type == Leap.Gesture.TYPE_SWIPE:
           swipe = SwipeGesture(gesture)
+          print swipe.direction.x
+          if swipe.direction.y < -0.5:
+            self.game.start_move('DOWN')
+            if swipe.state == Leap.Gesture.STATE_STOP:
+              self.game.stop_move('DOWN')
+          elif swipe.direction.x < -0.5:
+            self.game.start_move('RIGHT')
+            if swipe.state == Leap.Gesture.STATE_STOP:
+              self.game.stop_move('RIGHT')
+          elif swipe.direction.x > 0.5:
+            self.game.start_move('LEFT')
+            if swipe.state == Leap.Gesture.STATE_STOP:
+              self.game.stop_move('LEFT')
+
     self.game.redraw()
 
   def state_string(self, state):
