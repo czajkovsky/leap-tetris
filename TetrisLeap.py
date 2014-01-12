@@ -10,6 +10,12 @@ class GameEngine:
     self.board = GameBoard()
     self.board.initialize(pygame.time.get_ticks())
 
+  def stop(self):
+    self.running = False
+
+  def isRunning(self):
+    return self.running
+
   def run(self):
     running = self.running
     board = self.board
@@ -26,7 +32,7 @@ class GameEngine:
           break
         if event.type == pygame.KEYDOWN:
           if event.key == pygame.K_ESCAPE:
-            running = False
+            stop_game()
           if event.key == pygame.K_g:
             board.toggle_grid()
             board.update(pygame.time.get_ticks())
@@ -71,7 +77,13 @@ class GameEngine:
 def main():
 
   game = GameEngine()
-  game.run()
+  # game.run()
+
+  while game.isRunning():
+    for event in pygame.event.get():
+      if event.type == pygame.KEYDOWN:
+        game.stop()
+  pygame.quit()
 
 if __name__ == "__main__":
     main()
