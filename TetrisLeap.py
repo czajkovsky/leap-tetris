@@ -2,6 +2,62 @@ import pygame
 from pygame.locals import *
 from Game_Board import *
 from sys import exit
+import Leap, sys
+from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
+
+class Listener(Leap.Listener):
+  def on_init(self, controller):
+    self.game = GameEngine()
+    self.game.init
+    print "Initialized"
+
+  def on_connect(self, controller):
+    print "Connected"
+
+    # Enable gestures
+    controller.enable_gesture(Leap.Gesture.TYPE_CIRCLE);
+    controller.enable_gesture(Leap.Gesture.TYPE_SWIPE);
+
+  def on_disconnect(self, controller):
+    # Note: not dispatched when running in a debugger.
+    print "Disconnected"
+
+  def on_exit(self, controller):
+    print "Exited"
+  
+  def on_frame(self, controller):
+    # Get the most recent frame and report some basic information
+    frame = controller.frame()
+    if not frame.hands.is_empty:
+      # Get the first hand
+      hand = frame.hands[0]
+      # Gestures
+      for gesture in frame.gestures():
+
+        if gesture.type == Leap.Gesture.TYPE_CIRCLE:
+          circle = CircleGesture(gesture)
+
+          if circle.state != Leap.Gesture.STATE_START:
+            if circle.progress >= 1:
+              #TODO funkcja uruchamiana
+        if gesture.type == Leap.Gesture.TYPE_SWIPE:
+          swipe = SwipeGesture(gesture)
+            #TODO swipe
+
+#  def on_frame(self, controller):
+
+  def state_string(self, state):
+    if state == Leap.Gesture.STATE_START:
+      return "STATE_START"
+
+    if state == Leap.Gesture.STATE_UPDATE:
+      return "STATE_UPDATE"
+
+    if state == Leap.Gesture.STATE_STOP:
+      return "STATE_STOP"
+
+    if state == Leap.Gesture.STATE_INVALID:
+      return "STATE_INVALID"
 
 class GameEngine:
 
@@ -63,6 +119,10 @@ class GameEngine:
     pygame.display.flip()
 
 def main():
+
+  listener = Listener()
+  controller = Leap.Controller()
+  controller.add_listener(listener)
 
   game = GameEngine()
 
