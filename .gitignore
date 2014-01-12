@@ -36,7 +36,6 @@ nosetests.xml
 .pydevproject
 
 # Leap files
-Leap.py
 Leap.pyc
 lipLeap.dylib
 LeapPython.so
