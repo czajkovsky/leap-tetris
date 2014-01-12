@@ -6,62 +6,51 @@ import Leap, sys
 from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
 
 class Listener(Leap.Listener):
+
   def on_init(self, controller):
+    print "Leap controller initialized"
     self.game = GameEngine()
-    self.game.init
-    print "Initialized"
+    self.current_progress = 0
 
   def on_connect(self, controller):
-    print "Connected"
-
-    # Enable gestures
+    print "Leap controller connected"
     controller.enable_gesture(Leap.Gesture.TYPE_CIRCLE);
     controller.enable_gesture(Leap.Gesture.TYPE_SWIPE);
 
   def on_disconnect(self, controller):
-    # Note: not dispatched when running in a debugger.
-    print "Disconnected"
+    print "Leap controller disconnected"
 
   def on_exit(self, controller):
-    print "Exited"
-  
+    print "Leap controller exited"
+
   def on_frame(self, controller):
-    # Get the most recent frame and report some basic information
     frame = controller.frame()
     if not frame.hands.is_empty:
-      # Get the first hand
       hand = frame.hands[0]
-      # Gestures
       for gesture in frame.gestures():
-
         if gesture.type == Leap.Gesture.TYPE_CIRCLE:
           circle = CircleGesture(gesture)
-
-          if circle.state != Leap.Gesture.STATE_START:
-            if circle.progress >= 1:
-              #TODO funkcja uruchamiana
+          if circle.state == Leap.Gesture.STATE_STOP:
+            if circle.progress >= 0.8:
+              self.game.rotate()
         if gesture.type == Leap.Gesture.TYPE_SWIPE:
           swipe = SwipeGesture(gesture)
-            #TODO swipe
-
-#  def on_frame(self, controller):
+    self.game.redraw()
 
   def state_string(self, state):
     if state == Leap.Gesture.STATE_START:
       return "STATE_START"
-
     if state == Leap.Gesture.STATE_UPDATE:
       return "STATE_UPDATE"
-
     if state == Leap.Gesture.STATE_STOP:
       return "STATE_STOP"
-
     if state == Leap.Gesture.STATE_INVALID:
       return "STATE_INVALID"
 
 class GameEngine:
 
   def __init__(self):
+    print 'Game engine initialzed'
     self.running = True
     self.board = GameBoard()
     self.board.initialize(pygame.time.get_ticks())
@@ -124,36 +113,41 @@ def main():
   controller = Leap.Controller()
   controller.add_listener(listener)
 
-  game = GameEngine()
+  print "Press Enter to quit..."
+  sys.stdin.readline()
 
-  while game.isRunning():
-    for event in pygame.event.get():
-      if game.isPaused():
-        break
-      if event.type == pygame.QUIT:
-        game.stop()
-      if event.type == pygame.KEYDOWN:
-        if event.key == pygame.K_ESCAPE:
-          game.stop()
-        if event.key == pygame.K_g:
-          game.showGrid()
-        if event.key == pygame.K_LEFT:
-          game.start_move('LEFT')
-        if event.key == pygame.K_RIGHT:
-          game.start_move('RIGHT')
-        if event.key == pygame.K_DOWN:
-          game.start_move('DOWN')
-        if event.key == pygame.K_UP:
-          game.rotate()
-      if event.type == pygame.KEYUP:
-        if event.key == pygame.K_DOWN:
-          game.stop_move('DOWN')
-        if event.key == pygame.K_LEFT:
-          game.stop_move('LEFT')
-        if event.key == pygame.K_RIGHT:
-          game.stop_move('RIGHT')
-    game.redraw()
   pygame.quit()
+
+  controller.remove_listener(listener)
+
+  # while game.isRunning():
+  #   for event in pygame.event.get():
+  #     if game.isPaused():
+  #       break
+  #     if event.type == pygame.QUIT:
+  #       game.stop()
+  #     if event.type == pygame.KEYDOWN:
+  #       if event.key == pygame.K_ESCAPE:
+  #         game.stop()
+  #       if event.key == pygame.K_g:
+  #         game.showGrid()
+  #       if event.key == pygame.K_LEFT:
+  #         game.start_move('LEFT')
+  #       if event.key == pygame.K_RIGHT:
+  #         game.start_move('RIGHT')
+  #       if event.key == pygame.K_DOWN:
+  #         game.start_move('DOWN')
+  #       if event.key == pygame.K_UP:
+  #         game.rotate()
+  #     if event.type == pygame.KEYUP:
+  #       if event.key == pygame.K_DOWN:
+  #         game.stop_move('DOWN')
+  #       if event.key == pygame.K_LEFT:
+  #         game.stop_move('LEFT')
+  #       if event.key == pygame.K_RIGHT:
+  #         game.stop_move('RIGHT')
+  #   game.redraw()
+  # pygame.quit()
 
 if __name__ == "__main__":
     main()
