@@ -10,9 +10,13 @@ class Move:
 
   def __init__(self):
     print 'New move'
-    self.started = False
-    start_position = Leap.Vector(0, 0, 0)
-    current_position = Leap.Vector(0, 0, 0)
+    self.needs_reset = True
+    start_pos = Leap.Vector(0, 0, 0)
+    last_change_post = Leap.Vector(0, 0, 0)
+
+  def reset(self):
+    self.needs_reset = False
+    print 'Reset move'
 
 class Listener(Leap.Listener):
 
@@ -37,8 +41,9 @@ class Listener(Leap.Listener):
     frame = controller.frame()
     if not frame.hands.is_empty:
       hand = frame.hands[0]
-      # print hand.palm_position.x, ' ', hand.palm_position.y
-      print self.game.blocks()
+      print hand.palm_position.x, ' ', hand.palm_position.y
+      if -10 < hand.palm_position.x < 10:
+        self.current_move.reset()
 
       for gesture in frame.gestures():
         if gesture.type == Leap.Gesture.TYPE_CIRCLE:
