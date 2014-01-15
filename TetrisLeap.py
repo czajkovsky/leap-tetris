@@ -33,13 +33,22 @@ class HorizontalMove(Move):
       self.pos = new_pos
       return 'LEFT'
 
+class CircleMove(Move):
+
+  def check_rotation(self, progress):
+    if progress > 1.0:
+      self.block()
+      return True
+    else:
+      return False
+
 class Listener(Leap.Listener):
 
   def on_init(self, controller):
     print "Leap controller initialized"
     self.game = GameEngine()
     self.horizontal_move = HorizontalMove()
-    self.circle_move = Move()
+    self.circle_move = CircleMove()
     self.current_progress = 0
 
   def on_connect(self, controller):
@@ -74,17 +83,21 @@ class Listener(Leap.Listener):
         if gesture.type == Leap.Gesture.TYPE_CIRCLE:
           circle = CircleGesture(gesture)
 
+          if circle.state == Leap.Gesture.STATE_START:
+            self.circle_move.reset()
+
+          if circle.state == Leap.Gesture.STATE_UPDATE or circle.state == Leap.Gesture.STATE_STOP:
+            if not self.circle_move.is_blocked():
+              if self.circle_move.check_rotation(circle.progress):
+                self.game.rotate()
+
+          if circle.state == Leap.Gesture.STATE_START:
+            self.circle_move.reset()
+
           swept_angle = 0
           if circle.state != Leap.Gesture.STATE_START:
             previous_update = CircleGesture(controller.frame(1).gesture(circle.id))
             swept_angle =  (circle.progress - previous_update.progress) * 2 * Leap.PI
-
-          print "Circle id: %d, %s, progress: %f, radius: %f, angle: %f degrees" % (
-            gesture.id, self.state_string(gesture.state),
-            circle.progress, circle.radius, swept_angle * Leap.RAD_TO_DEG)
-
-          if (gesture.state == Leap.Gesture.STATE_STOP):
-            print 'rotate'
 
     self.game.redraw()
 
