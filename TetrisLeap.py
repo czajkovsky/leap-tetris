@@ -11,12 +11,20 @@ class Move:
   def __init__(self):
     print 'New move'
     self.needs_reset = True
-    start_pos = Leap.Vector(0, 0, 0)
-    last_change_post = Leap.Vector(0, 0, 0)
+    self.last_change_pos = Leap.Vector(0, 0, 0)
+
+  def is_blocked(self):
+    return self.needs_reset
+
+  def update(self, position):
+    self.last_change_post = position
 
   def reset(self):
     self.needs_reset = False
-    print 'Reset move'
+    self.update(Leap.Vector(0, 0, 0))
+
+  def current_distance(self, x):
+    return self.last_change_pos.x - x
 
 class Listener(Leap.Listener):
 
@@ -44,6 +52,9 @@ class Listener(Leap.Listener):
       print hand.palm_position.x, ' ', hand.palm_position.y
       if -10 < hand.palm_position.x < 10:
         self.current_move.reset()
+
+      if not self.current_move.is_blocked():
+        print self.current_move.current_distance(hand.palm_position.x)
 
       for gesture in frame.gestures():
         if gesture.type == Leap.Gesture.TYPE_CIRCLE:
