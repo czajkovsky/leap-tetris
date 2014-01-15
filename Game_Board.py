@@ -103,6 +103,9 @@ class GameBoard:
     def number_of_blocks(self):
         return self.blocks
 
+    def increment_number_of_blocks(self):
+        self.blocks += 1
+
     def initialize(self,time):
         self.current_gp = None
         shape_id = random.randint(1,7)
@@ -209,6 +212,7 @@ class GameBoard:
                     self.game_over = True
                 self.cells[gp.row][gp.col].active = True
                 self.cells[gp.row][gp.col].image = gp.image
+            self.increment_number_of_blocks()
             self.check_rows()
             self.generate_gp(time)
 
