@@ -20,13 +20,16 @@ class Move:
     new_pos = int(x / self.step)
     if new_pos > self.pos:
       self.pos = new_pos
-      return 'LEFT'
+      return 'RIGHT'
     elif new_pos < self.pos:
       self.pos = new_pos
-      return 'RIGHT'
+      return 'LEFT'
 
   def reset(self):
     self.needs_reset = False
+
+  def block(self):
+    self.needs_reset = True
 
 class Listener(Leap.Listener):
 
@@ -54,8 +57,7 @@ class Listener(Leap.Listener):
 
       # actions triggered when we have new block
       if self.game.new_block():
-        print 'new block'
-
+        self.current_move.block()
 
       if -5 < hand.palm_position.x < 5 and self.current_move.is_blocked():
         self.current_move.reset()
