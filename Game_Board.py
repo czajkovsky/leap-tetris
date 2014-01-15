@@ -96,8 +96,12 @@ class GameBoard:
         self.lines_done = 0
         self.level = 1
         self.score = 0
+        self.blocks = 0
         Pause_Button(self, ((self.cols+1)*self.cell_width, ((self.rows)*self.cell_height) - 45))
         New_Game_Button(self, ((self.cols+4)*self.cell_width, ((self.rows)*self.cell_height) - 45))
+
+    def number_of_blocks(self):
+        return self.blocks
 
     def initialize(self,time):
         self.current_gp = None

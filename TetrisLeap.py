@@ -5,11 +5,21 @@ from sys import exit
 import Leap, sys
 from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
 
+
+class Move:
+
+  def __init__(self):
+    print 'New move'
+    self.started = False
+    start_position = Leap.Vector(0, 0, 0)
+    current_position = Leap.Vector(0, 0, 0)
+
 class Listener(Leap.Listener):
 
   def on_init(self, controller):
     print "Leap controller initialized"
     self.game = GameEngine()
+    self.current_move = Move()
     self.current_progress = 0
 
   def on_connect(self, controller):
@@ -27,6 +37,9 @@ class Listener(Leap.Listener):
     frame = controller.frame()
     if not frame.hands.is_empty:
       hand = frame.hands[0]
+      # print hand.palm_position.x, ' ', hand.palm_position.y
+      print self.game.blocks()
+
       for gesture in frame.gestures():
         if gesture.type == Leap.Gesture.TYPE_CIRCLE:
           circle = CircleGesture(gesture)
@@ -35,7 +48,6 @@ class Listener(Leap.Listener):
               self.game.rotate()
         if gesture.type == Leap.Gesture.TYPE_SWIPE:
           swipe = SwipeGesture(gesture)
-          print swipe.direction.x
           if swipe.direction.y < -0.5:
             self.game.start_move('DOWN')
             if swipe.state == Leap.Gesture.STATE_STOP:
@@ -68,6 +80,9 @@ class GameEngine:
     self.running = True
     self.board = GameBoard()
     self.board.initialize(pygame.time.get_ticks())
+
+  def blocks(self):
+    return self.board.number_of_blocks()
 
   def stop(self):
     self.running = False
