@@ -16,6 +16,14 @@ class Move:
   def is_blocked(self):
     return self.needs_reset
 
+  def reset(self):
+    self.needs_reset = False
+
+  def block(self):
+    self.needs_reset = True
+
+class HorizontalMove(Move):
+
   def check_position(self, x):
     new_pos = int(x / self.step)
     if new_pos > self.pos:
@@ -25,18 +33,13 @@ class Move:
       self.pos = new_pos
       return 'LEFT'
 
-  def reset(self):
-    self.needs_reset = False
-
-  def block(self):
-    self.needs_reset = True
-
 class Listener(Leap.Listener):
 
   def on_init(self, controller):
     print "Leap controller initialized"
     self.game = GameEngine()
-    self.current_move = Move()
+    self.horizontal_move = HorizontalMove()
+    self.circle_move = Move()
     self.current_progress = 0
 
   def on_connect(self, controller):
@@ -57,30 +60,31 @@ class Listener(Leap.Listener):
 
       # actions triggered when we have new block
       if self.game.new_block():
-        self.current_move.block()
+        self.horizontal_move.block()
+        self.circle_move.block()
 
-      if -5 < hand.palm_position.x < 5 and self.current_move.is_blocked():
-        self.current_move.reset()
+      if -5 < hand.palm_position.x < 5 and self.horizontal_move.is_blocked():
+        self.horizontal_move.reset()
 
-      if not self.current_move.is_blocked():
-        self.game.move(self.current_move.check_position(hand.palm_position.x))
+      if not self.horizontal_move.is_blocked():
+        self.game.move(self.horizontal_move.check_position(hand.palm_position.x))
 
       for gesture in frame.gestures():
-        if gesture.type == Leap.Gesture.TYPE_SWIPE:
-          print 'we have swipte!'
-          # swipe = SwipeGesture(gesture)
-          # if swipe.direction.y < -0.5:
-          #   self.game.start_move('DOWN')
-          #   if swipe.state == Leap.Gesture.STATE_STOP:
-          #     self.game.stop_move('DOWN')
-          # elif swipe.direction.x < -0.5:
-          #   self.game.start_move('RIGHT')
-          #   if swipe.state == Leap.Gesture.STATE_STOP:
-          #     self.game.stop_move('RIGHT')
-          # elif swipe.direction.x > 0.5:
-          #   self.game.start_move('LEFT')
-          #   if swipe.state == Leap.Gesture.STATE_STOP:
-          #     self.game.stop_move('LEFT')
+
+        if gesture.type == Leap.Gesture.TYPE_CIRCLE:
+          circle = CircleGesture(gesture)
+
+          swept_angle = 0
+          if circle.state != Leap.Gesture.STATE_START:
+            previous_update = CircleGesture(controller.frame(1).gesture(circle.id))
+            swept_angle =  (circle.progress - previous_update.progress) * 2 * Leap.PI
+
+          print "Circle id: %d, %s, progress: %f, radius: %f, angle: %f degrees" % (
+            gesture.id, self.state_string(gesture.state),
+            circle.progress, circle.radius, swept_angle * Leap.RAD_TO_DEG)
+
+          if (gesture.state == Leap.Gesture.STATE_STOP):
+            print 'rotate'
 
     self.game.redraw()
 
@@ -113,7 +117,6 @@ class GameEngine:
     else:
       return False
 
-
   def stop(self):
     self.running = False
 
@@ -132,6 +135,8 @@ class GameEngine:
       self.board.current_gp.move_left()
     elif direction == 'RIGHT':
       self.board.current_gp.move_right()
+    elif direction == 'DOWN':
+      self.board.current_gp.move_down()
 
   def rotate(self):
     self.board.current_gp.rotate()
