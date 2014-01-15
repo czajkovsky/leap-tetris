@@ -184,6 +184,13 @@ class GameBoard:
             y = y_offset + (gp.row * self.cell_height)
             self.queue_image.blit(gp.image, (x, y))
 
+    def force_move(self, direction):
+        print 'force'
+        # if direction == 'LEFT':
+        #     self.current_gp.move_left()
+        # elif direction == 'RIGHT':
+        #     self.current_gp.move_right()
+
 
     def update(self, time):
         if self.paused or self.game_over:
@@ -194,14 +201,14 @@ class GameBoard:
                 speed = 1000
             if self.key_down_flag:
                 speed = 25
-            elif self.key_left_flag:
-                if time - self.last_strafe >= self.strafe_rate:
-                    self.current_gp.move_left()
-                    self.last_strafe = time
-            elif self.key_right_flag:
-                if time - self.last_strafe >= self.strafe_rate:
-                    self.current_gp.move_right()
-                    self.last_strafe = time
+            # elif self.key_left_flag:
+            #     if time - self.last_strafe >= self.strafe_rate:
+            #         self.current_gp.move_left()
+            #         self.last_strafe = time
+            # elif self.key_right_flag:
+            #     if time - self.last_strafe >= self.strafe_rate:
+            #         self.current_gp.move_right()
+            #         self.last_strafe = time
             if time - self.current_gp.last_move >= speed:
                 self.current_gp.move_down()
                 self.current_gp.last_move = time

@@ -11,13 +11,14 @@ class Move:
   def __init__(self):
     print 'New move'
     self.needs_reset = True
+    self.initial = 0
     self.last_change_pos = Leap.Vector(0, 0, 0)
 
   def is_blocked(self):
     return self.needs_reset
 
   def update(self, position):
-    self.last_change_post = position
+    self.last_change_pos = Leap.Vector(position)
 
   def reset(self):
     self.needs_reset = False
@@ -49,33 +50,47 @@ class Listener(Leap.Listener):
     frame = controller.frame()
     if not frame.hands.is_empty:
       hand = frame.hands[0]
-      print hand.palm_position.x, ' ', hand.palm_position.y
-      if -10 < hand.palm_position.x < 10:
+      if -5 < hand.palm_position.x < 5 and self.current_move.is_blocked():
+        print 'reset'
         self.current_move.reset()
 
       if not self.current_move.is_blocked():
-        print self.current_move.current_distance(hand.palm_position.x)
+        # print self.current_move.last_change_pos
+        # print self.current_move.current_distance(hand.palm_position.x)
 
-      for gesture in frame.gestures():
-        if gesture.type == Leap.Gesture.TYPE_CIRCLE:
-          circle = CircleGesture(gesture)
-          if circle.state == Leap.Gesture.STATE_STOP:
-            if circle.progress >= 0.8:
-              self.game.rotate()
-        if gesture.type == Leap.Gesture.TYPE_SWIPE:
-          swipe = SwipeGesture(gesture)
-          if swipe.direction.y < -0.5:
-            self.game.start_move('DOWN')
-            if swipe.state == Leap.Gesture.STATE_STOP:
-              self.game.stop_move('DOWN')
-          elif swipe.direction.x < -0.5:
-            self.game.start_move('RIGHT')
-            if swipe.state == Leap.Gesture.STATE_STOP:
-              self.game.stop_move('RIGHT')
-          elif swipe.direction.x > 0.5:
-            self.game.start_move('LEFT')
-            if swipe.state == Leap.Gesture.STATE_STOP:
-              self.game.stop_move('LEFT')
+        if self.current_move.current_distance(hand.palm_position.x) > 20:
+          print self.current_move.last_change_pos
+          self.current_move.update(hand.palm_position)
+          self.initial -=1
+          self.game.start_move('LEFT')
+
+
+        if self.current_move.current_distance(hand.palm_position.x) < -20:
+          print self.current_move.last_change_pos
+          self.current_move.update(hand.palm_position)
+          self.initial +=1
+          self.game.start_move('RIGHT')
+
+      # for gesture in frame.gestures():
+      #   if gesture.type == Leap.Gesture.TYPE_CIRCLE:
+      #     circle = CircleGesture(gesture)
+      #     if circle.state == Leap.Gesture.STATE_STOP:
+      #       if circle.progress >= 0.8:
+      #         self.game.rotate()
+      #   if gesture.type == Leap.Gesture.TYPE_SWIPE:
+      #     swipe = SwipeGesture(gesture)
+      #     if swipe.direction.y < -0.5:
+      #       self.game.start_move('DOWN')
+      #       if swipe.state == Leap.Gesture.STATE_STOP:
+      #         self.game.stop_move('DOWN')
+      #     elif swipe.direction.x < -0.5:
+      #       self.game.start_move('RIGHT')
+      #       if swipe.state == Leap.Gesture.STATE_STOP:
+      #         self.game.stop_move('RIGHT')
+      #     elif swipe.direction.x > 0.5:
+      #       self.game.start_move('LEFT')
+      #       if swipe.state == Leap.Gesture.STATE_STOP:
+      #         self.game.stop_move('LEFT')
 
     self.game.redraw()
 
@@ -114,17 +129,10 @@ class GameEngine:
     self.board.update(pygame.time.get_ticks())
 
   def start_move(self, direction):
-    if direction == 'DOWN':
-      self.board.key_down_flag = True
-    else:
-      if self.board.last_strafe == 0:
-        if direction == 'LEFT':
-          self.board.current_gp.move_left()
-          self.board.key_left_flag = True
-        elif direction == 'RIGHT':
-          self.board.current_gp.move_right()
-          self.board.key_right_flag = True
-        self.board.last_strafe = (pygame.time.get_ticks()+250)
+    if direction == 'LEFT':
+      self.board.current_gp.move_left()
+    elif direction == 'RIGHT':
+      self.board.current_gp.move_right()
 
   def stop_move(self, direction):
     if direction == 'DOWN':
