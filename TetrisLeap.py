@@ -51,6 +51,12 @@ class Listener(Leap.Listener):
     frame = controller.frame()
     if not frame.hands.is_empty:
       hand = frame.hands[0]
+
+      # actions triggered when we have new block
+      if self.game.new_block():
+        print 'new block'
+
+
       if -5 < hand.palm_position.x < 5 and self.current_move.is_blocked():
         self.current_move.reset()
 
@@ -97,9 +103,18 @@ class GameEngine:
     self.running = True
     self.board = GameBoard()
     self.board.initialize(pygame.time.get_ticks())
+    self.blocks = 0
 
-  def blocks(self):
+  def current_block(self):
     return self.board.number_of_blocks()
+
+  def new_block(self):
+    if self.blocks < self.current_block():
+      self.blocks = self.current_block()
+      return True
+    else:
+      return False
+
 
   def stop(self):
     self.running = False
