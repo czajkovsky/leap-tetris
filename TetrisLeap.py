@@ -17,6 +17,7 @@ class Move:
     return self.needs_reset
 
   def reset(self):
+    self.pos = 0
     self.needs_reset = False
 
   def block(self):
@@ -34,6 +35,9 @@ class HorizontalMove(Move):
       return 'LEFT'
 
 class CircleMove(Move):
+
+  def __init(self):
+    self.count = 0
 
   def check_rotation(self, progress):
     if progress > 1.0:
@@ -72,6 +76,7 @@ class Listener(Leap.Listener):
         self.horizontal_move.block()
         self.circle_move.block()
 
+      # we're close to center, we can ublock block
       if -5 < hand.palm_position.x < 5 and self.horizontal_move.is_blocked():
         self.horizontal_move.reset()
 
@@ -83,8 +88,19 @@ class Listener(Leap.Listener):
         if gesture.type == Leap.Gesture.TYPE_CIRCLE:
           circle = CircleGesture(gesture)
 
+          swept_angle = 0
+          if circle.state != Leap.Gesture.STATE_START:
+            previous_update = CircleGesture(controller.frame(1).gesture(circle.id))
+            swept_angle =  (circle.progress - previous_update.progress) * 2 * Leap.PI
+
+          print "Circle id: %d, %s, progress: %f, radius: %f, angle: %f degrees" % (
+            gesture.id, self.state_string(gesture.state),
+            circle.progress, circle.radius, swept_angle * Leap.RAD_TO_DEG)
+
           if circle.state == Leap.Gesture.STATE_START:
             self.circle_move.reset()
+
+
 
           if circle.state == Leap.Gesture.STATE_UPDATE or circle.state == Leap.Gesture.STATE_STOP:
             if not self.circle_move.is_blocked():
