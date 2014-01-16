@@ -36,11 +36,14 @@ class HorizontalMove(Move):
 
 class CircleMove(Move):
 
-  def __init(self):
+  def __init__(self):
+    self.needs_reset = True
     self.count = 0
+    self.in_row = 0
+    self.check_rot = False
 
   def check_rotation(self, progress):
-    if progress > 1.0:
+    if progress > 0.75:
       self.block()
       return True
     else:
@@ -68,7 +71,18 @@ class Listener(Leap.Listener):
 
   def on_frame(self, controller):
     frame = controller.frame()
+
     if not frame.hands.is_empty:
+
+      if self.circle_move.in_row > 1:
+        if self.circle_move.in_progress:
+          self.circle_move.reset()
+          self.circle_move.check_rot = True
+          self.circle_move.in_progress = False
+      else:
+        self.circle_move.in_progress = True
+
+      self.circle_move.in_row += 1
       hand = frame.hands[0]
 
       # actions triggered when we have new block
@@ -88,27 +102,11 @@ class Listener(Leap.Listener):
         if gesture.type == Leap.Gesture.TYPE_CIRCLE:
           circle = CircleGesture(gesture)
 
-          swept_angle = 0
-          if circle.state != Leap.Gesture.STATE_START:
-            previous_update = CircleGesture(controller.frame(1).gesture(circle.id))
-            swept_angle =  (circle.progress - previous_update.progress) * 2 * Leap.PI
+          self.circle_move.in_row = 0
 
-          print "Circle id: %d, %s, progress: %f, radius: %f, angle: %f degrees" % (
-            gesture.id, self.state_string(gesture.state),
-            circle.progress, circle.radius, swept_angle * Leap.RAD_TO_DEG)
-
-          if circle.state == Leap.Gesture.STATE_START:
-            self.circle_move.reset()
-
-
-
-          if circle.state == Leap.Gesture.STATE_UPDATE or circle.state == Leap.Gesture.STATE_STOP:
-            if not self.circle_move.is_blocked():
-              if self.circle_move.check_rotation(circle.progress):
-                self.game.rotate()
-
-          if circle.state == Leap.Gesture.STATE_START:
-            self.circle_move.reset()
+          if self.circle_move.check_rot and not self.circle_move.is_blocked():
+            if self.circle_move.check_rotation(circle.progress):
+              self.game.rotate()
 
           swept_angle = 0
           if circle.state != Leap.Gesture.STATE_START:
