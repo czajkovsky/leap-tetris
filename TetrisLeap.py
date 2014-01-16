@@ -194,35 +194,6 @@ def main():
 
   controller.remove_listener(listener)
 
-  # while game.isRunning():
-  #   for event in pygame.event.get():
-  #     if game.isPaused():
-  #       break
-  #     if event.type == pygame.QUIT:
-  #       game.stop()
-  #     if event.type == pygame.KEYDOWN:
-  #       if event.key == pygame.K_ESCAPE:
-  #         game.stop()
-  #       if event.key == pygame.K_g:
-  #         game.showGrid()
-  #       if event.key == pygame.K_LEFT:
-  #         game.start_move('LEFT')
-  #       if event.key == pygame.K_RIGHT:
-  #         game.start_move('RIGHT')
-  #       if event.key == pygame.K_DOWN:
-  #         game.start_move('DOWN')
-  #       if event.key == pygame.K_UP:
-  #         game.rotate()
-  #     if event.type == pygame.KEYUP:
-  #       if event.key == pygame.K_DOWN:
-  #         game.stop_move('DOWN')
-  #       if event.key == pygame.K_LEFT:
-  #         game.stop_move('LEFT')
-  #       if event.key == pygame.K_RIGHT:
-  #         game.stop_move('RIGHT')
-  #   game.redraw()
-  # pygame.quit()
-
 if __name__ == "__main__":
     main()
 
