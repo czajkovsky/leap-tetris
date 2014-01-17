@@ -35,21 +35,9 @@ class HorizontalMove(Move):
       return 'LEFT'
 
 class VerticalMove(Move):
-  
-  def __init__(self):
-    self.needs_reset = True
-    self.pos = 400
-
-  def reset(self):
-    self.pos = 400
-    self.needs_reset = False
 
   def check_position(self, y):
-    new_pos = int(y)
-    if new_pos+4 < self.pos:
-      print str(new_pos) + '  ' + str(self.pos) 
-      self.pos = new_pos
-      #TODO block horizontal
+    if y < 0:
       return 'DOWN'
 
 class CircleMove(Move):
@@ -93,6 +81,8 @@ class Listener(Leap.Listener):
 
     if not frame.hands.is_empty:
 
+      self.game.board.paused = False
+
       if self.circle_move.in_row > 1:
         if self.circle_move.in_progress:
           self.circle_move.reset()
@@ -113,15 +103,9 @@ class Listener(Leap.Listener):
       # we're close to center, we can ublock block
       if -5 < hand.palm_position.x < 5 and self.horizontal_move.is_blocked():
         self.horizontal_move.reset()
-      if -5 < hand.palm_position.x < 5 and hand.palm_position.x < 100 and self.vertical_move.is_blocked():
-        self.vertical_move.reset()
 
       if not self.horizontal_move.is_blocked():
         self.game.move(self.horizontal_move.check_position(hand.palm_position.x))
-
-      if not self.vertical_move.is_blocked():
-        #print 'Y: ' + str(hand.palm_position.y)
-        self.game.move(self.vertical_move.check_position(hand.palm_position.y))
 
       for gesture in frame.gestures():
 
@@ -138,9 +122,16 @@ class Listener(Leap.Listener):
           if circle.state != Leap.Gesture.STATE_START:
             previous_update = CircleGesture(controller.frame(1).gesture(circle.id))
             swept_angle =  (circle.progress - previous_update.progress) * 2 * Leap.PI
+        
+        elif gesture.type == Leap.Gesture.TYPE_SWIPE:
+          swipe = SwipeGesture(gesture)
+          if not self.vertical_move.is_blocked():
+            self.game.move(self.vertical_move.check_position(swipe.direction.y))
+            self.horizontal_move.block()
+          elif swipe.direction.y > 0:
+            self.vertical_move.reset()
     else :
-      #TODO pause
-
+      self.game.board.paused = True
     self.game.redraw()
 
   def state_string(self, state):
