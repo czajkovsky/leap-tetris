@@ -98,18 +98,13 @@ class Listener(Leap.Listener):
       if self.game.new_block():
         self.horizontal_move.block()
         self.circle_move.block()
-        self.vertical_move.block()
 
       # we're close to center, we can ublock block
       if -5 < hand.palm_position.x < 5 and self.horizontal_move.is_blocked():
         self.horizontal_move.reset()
-        self.verical_move.reset()
 
       if not self.horizontal_move.is_blocked():
         self.game.move(self.horizontal_move.check_position(hand.palm_position.x))
-        self.game.move(self.vertical_move.check_position(hand.palm_position.y))
-
-      #vertical
 
       for gesture in frame.gestures():
 
