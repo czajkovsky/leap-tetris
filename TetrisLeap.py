@@ -55,6 +55,24 @@ class CircleMove(Move):
     else:
       return False
 
+class GridControl():
+
+  def __init__(self):
+    self.is_grid = False
+    self.is_fist = False
+
+  def check_fist(self):
+    if self.is_fist == False:
+      self.is_fist = True
+    else:
+      self.is_fist = False
+
+  def check_grid(self):
+    if self.is_grid == False:
+      self.is_grid = True
+    else:
+      self.is_grid = False
+
 class Listener(Leap.Listener):
 
   def on_init(self, controller):
@@ -63,6 +81,7 @@ class Listener(Leap.Listener):
     self.horizontal_move = HorizontalMove()
     self.circle_move = CircleMove()
     self.vertical_move = VerticalMove()
+    self.grid_control = GridControl()
     self.current_progress = 0
 
   def on_connect(self, controller):
@@ -94,13 +113,28 @@ class Listener(Leap.Listener):
       self.circle_move.in_row += 1
       hand = frame.hands[0]
 
+      # grid visibility control
+      if controller.frame(3):
+        if not controller.frame(3).hands.is_empty:
+          previous_hand = controller.frame(3).hands[0]
+
+          if hand.fingers.is_empty:
+            if previous_hand.fingers.is_empty:
+              if not self.grid_control.is_fist:
+                self.grid_control.check_fist()
+          elif not previous_hand.fingers.is_empty:
+            if self.grid_control.is_fist:
+              self.grid_control.check_fist()
+              self.grid_control.check_grid()
+              self.game.showGrid()
+
       # actions triggered when we have new block
       if self.game.new_block():
         self.horizontal_move.block()
         self.circle_move.block()
         self.vertical_move.block()
 
-      # we're close to center, we can ublock block
+      # we're close to center, we can unlock block
       if -5 < hand.palm_position.x < 5 and self.horizontal_move.is_blocked():
         self.horizontal_move.reset()
 
