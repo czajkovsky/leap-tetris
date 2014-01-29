@@ -12,6 +12,7 @@ class Move:
     self.needs_reset = True
     self.pos = 0
     self.step = 20.0
+    self.used = False
 
   def is_blocked(self):
     return self.needs_reset
@@ -19,9 +20,17 @@ class Move:
   def reset(self):
     self.pos = 0
     self.needs_reset = False
+    self.used = False
 
   def block(self):
+    self.used = False
     self.needs_reset = True
+
+  def use(self):
+    self.used = True
+
+  def is_used(self):
+    return self.used
 
 class HorizontalMove(Move):
 
@@ -31,14 +40,8 @@ class HorizontalMove(Move):
       self.pos = new_pos
       return 'RIGHT'
     elif new_pos < self.pos:
-      self.pos = new_pos 
+      self.pos = new_pos
       return 'LEFT'
-
-class VerticalMove(Move):
-
-  def check_position(self, y):
-    if y < 0:
-      return 'DOWN'
 
 class CircleMove(Move):
 
@@ -80,7 +83,7 @@ class Listener(Leap.Listener):
     self.game = GameEngine()
     self.horizontal_move = HorizontalMove()
     self.circle_move = CircleMove()
-    self.vertical_move = VerticalMove()
+    self.vertical_move = Move()
     self.grid_control = GridControl()
     self.current_progress = 0
 
@@ -113,21 +116,6 @@ class Listener(Leap.Listener):
       self.circle_move.in_row += 1
       hand = frame.hands[0]
 
-      # grid visibility control
-      if controller.frame(3):
-        if not controller.frame(3).hands.is_empty:
-          previous_hand = controller.frame(3).hands[0]
-
-          if hand.fingers.is_empty:
-            if previous_hand.fingers.is_empty:
-              if not self.grid_control.is_fist:
-                self.grid_control.check_fist()
-          elif not previous_hand.fingers.is_empty:
-            if self.grid_control.is_fist:
-              self.grid_control.check_fist()
-              self.grid_control.check_grid()
-              self.game.showGrid()
-
       # actions triggered when we have new block
       if self.game.new_block():
         self.horizontal_move.block()
@@ -137,9 +125,13 @@ class Listener(Leap.Listener):
       # we're close to center, we can unlock block
       if -5 < hand.palm_position.x < 5 and self.horizontal_move.is_blocked():
         self.horizontal_move.reset()
+        self.vertical_move.reset()
 
       if not self.horizontal_move.is_blocked():
         self.game.move(self.horizontal_move.check_position(hand.palm_position.x))
+
+      if self.vertical_move.is_used():
+        self.game.move('DOWN')
 
       for gesture in frame.gestures():
 
@@ -156,16 +148,14 @@ class Listener(Leap.Listener):
           if circle.state != Leap.Gesture.STATE_START:
             previous_update = CircleGesture(controller.frame(1).gesture(circle.id))
             swept_angle =  (circle.progress - previous_update.progress) * 2 * Leap.PI
-        
+
         elif gesture.type == Leap.Gesture.TYPE_SWIPE:
           swipe = SwipeGesture(gesture)
-          if not self.vertical_move.is_blocked():
-            self.game.move(self.vertical_move.check_position(swipe.direction.y))
-            self.horizontal_move.block()
-          elif swipe.direction.y > 0:
-            self.vertical_move.reset()
-    else :
-      self.game.board.paused = True
+          if swipe.direction.y < -0.3 and not self.vertical_move.is_blocked():
+            if not self.vertical_move.is_used():
+              self.vertical_move.use()
+              self.horizontal_move.block()
+
     self.game.redraw()
 
   def state_string(self, state):
